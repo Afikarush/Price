@@ -1,14 +1,7 @@
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { PRICING_METHODS } from '../lib/config';
-import { colors } from '../lib/theme';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { BRAND, PRICING_METHODS } from '../lib/config';
+import { colors, fonts } from '../lib/theme';
 import { isValidEmail, joinWaitlist } from '../lib/waitlist';
 
 type Status = 'idle' | 'sending' | 'done' | 'error';
@@ -23,12 +16,12 @@ export function WaitlistForm() {
     if (status === 'sending') return;
     if (!isValidEmail(email)) {
       setStatus('error');
-      setMessage('Please enter a valid email address.');
+      setMessage('That email doesn’t look right. Check for typos.');
       return;
     }
     if (!method) {
       setStatus('error');
-      setMessage('Please pick how you price your work today.');
+      setMessage('Pick one answer for how you price today.');
       return;
     }
     setStatus('sending');
@@ -38,25 +31,24 @@ export function WaitlistForm() {
       setStatus('done');
     } catch {
       setStatus('error');
-      setMessage('Something went wrong. Please try again in a moment.');
+      setMessage('Couldn’t save that. Check your connection and try again.');
     }
   }
 
   if (status === 'done') {
     return (
-      <View style={styles.card} accessibilityLiveRegion="polite">
-        <Text style={styles.doneTitle}>You're on the list ✓</Text>
+      <View style={styles.box} accessibilityLiveRegion="polite">
+        <Text style={styles.doneTitle}>You’re on the list.</Text>
         <Text style={styles.doneText}>
-          Thanks! We'll email you when early access opens. No spam, ever.
+          We’ll email you once when {BRAND} is ready to try.
         </Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>Join the waitlist</Text>
-      <Text style={styles.cardSub}>Get early access and founding-member pricing.</Text>
+    <View style={styles.box}>
+      <Text style={styles.title}>Get early access</Text>
 
       <Text style={styles.label} nativeID="email-label">
         Email
@@ -66,7 +58,7 @@ export function WaitlistForm() {
         value={email}
         onChangeText={setEmail}
         placeholder="you@yourshop.com"
-        placeholderTextColor="#A39A90"
+        placeholderTextColor="#8C9094"
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
@@ -74,10 +66,10 @@ export function WaitlistForm() {
         inputMode="email"
         accessibilityLabelledBy="email-label"
         aria-label="Email"
-        returnKeyType="done"
+        onSubmitEditing={submit}
       />
 
-      <Text style={styles.label}>How do you price your work today?</Text>
+      <Text style={styles.label}>How do you price your jobs today?</Text>
       <View style={styles.options} accessibilityRole="radiogroup">
         {PRICING_METHODS.map((option) => {
           const selected = method === option;
@@ -87,15 +79,12 @@ export function WaitlistForm() {
               onPress={() => setMethod(option)}
               accessibilityRole="radio"
               accessibilityState={{ checked: selected }}
-              style={({ pressed }) => [
-                styles.option,
-                pressed && !selected && styles.optionHover,
-                selected && styles.optionSelected,
-              ]}
+              style={[styles.option, selected && styles.optionSelected]}
             >
-              <Text style={[styles.optionText, selected && styles.optionTextSelected]}>
-                {option}
-              </Text>
+              <View style={[styles.dot, selected && styles.dotSelected]}>
+                {selected && <View style={styles.dotInner} />}
+              </View>
+              <Text style={styles.optionText}>{option}</Text>
             </Pressable>
           );
         })}
@@ -111,76 +100,79 @@ export function WaitlistForm() {
         onPress={submit}
         disabled={status === 'sending'}
         accessibilityRole="button"
-        style={({ pressed }) => [
-          styles.button,
-          pressed && styles.buttonActive,
-        ]}
+        style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
       >
         {status === 'sending' ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={colors.ink} />
         ) : (
-          <Text style={styles.buttonText}>Get early access</Text>
+          <Text style={styles.buttonText}>Put me on the list</Text>
         )}
       </Pressable>
-      <Text style={styles.fine}>Free to join. Unsubscribe anytime.</Text>
+      <Text style={styles.fine}>One email when it’s ready. Nothing else.</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
+  box: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    borderRadius: 4,
     padding: 22,
     width: '100%',
     maxWidth: 440,
-    shadowColor: '#3B2A1A',
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 3,
   },
-  cardTitle: { fontSize: 20, fontWeight: '700', color: colors.text },
-  cardSub: { fontSize: 15, color: colors.muted, marginTop: 4, marginBottom: 18 },
-  label: { fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 },
+  title: { fontFamily: fonts.display, fontSize: 22, color: colors.ink, marginBottom: 18 },
+  label: { fontFamily: fonts.medium, fontSize: 14, color: colors.ink, marginBottom: 8 },
   input: {
+    fontFamily: fonts.body,
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 14,
+    borderColor: colors.line,
+    borderRadius: 4,
+    paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 16, // 16+ stops iPhones from zooming in on tap
-    color: colors.text,
-    backgroundColor: '#FFFDF9',
-    marginBottom: 18,
+    color: colors.ink,
+    backgroundColor: colors.surface,
+    marginBottom: 20,
   },
-  options: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 18 },
+  options: { borderTopWidth: 1, borderColor: colors.line, marginBottom: 18 },
   option: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    backgroundColor: '#FFFDF9',
-  },
-  optionHover: { borderColor: colors.accent },
-  optionSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
-  optionText: { fontSize: 14, color: colors.text },
-  optionTextSelected: { color: '#fff', fontWeight: '600' },
-  error: { color: colors.error, fontSize: 14, marginBottom: 12 },
-  button: {
-    backgroundColor: colors.accent,
-    borderRadius: 10,
-    paddingVertical: 15,
+    flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 52,
+    gap: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderColor: colors.line,
+  },
+  optionSelected: { backgroundColor: colors.tapeSoft },
+  dot: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1.5,
+    borderColor: colors.muted,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  buttonActive: { backgroundColor: colors.accentDark },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  fine: { fontSize: 13, color: colors.muted, textAlign: 'center', marginTop: 10 },
-  doneTitle: { fontSize: 22, fontWeight: '700', color: colors.success, marginBottom: 8 },
-  doneText: { fontSize: 16, color: colors.text, lineHeight: 24 },
+  dotSelected: { borderColor: colors.ink },
+  dotInner: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.ink },
+  optionText: { fontFamily: fonts.body, fontSize: 15, color: colors.ink },
+  error: { fontFamily: fonts.body, color: colors.error, fontSize: 14, marginBottom: 12 },
+  button: {
+    backgroundColor: colors.tape,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    borderRadius: 4,
+    minHeight: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonPressed: { transform: [{ translateY: 1 }], opacity: 0.85 },
+  buttonText: { fontFamily: fonts.display, color: colors.ink, fontSize: 16 },
+  fine: { fontFamily: fonts.body, fontSize: 13, color: colors.muted, marginTop: 10 },
+  doneTitle: { fontFamily: fonts.display, fontSize: 22, color: colors.success, marginBottom: 6 },
+  doneText: { fontFamily: fonts.body, fontSize: 16, color: colors.ink, lineHeight: 24 },
 });

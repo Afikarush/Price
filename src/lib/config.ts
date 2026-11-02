@@ -8,12 +8,12 @@ export const BRAND = 'QuoteBench';
 // works on screen but nothing is saved — handy for testing.
 export const WAITLIST_URL = process.env.EXPO_PUBLIC_WAITLIST_URL ?? '';
 
-// Answers for "How do you price your work today?"
+// Answers for "How do you price your jobs today?"
 export const PRICING_METHODS = [
-  'Gut feel / experience',
-  'Spreadsheet',
+  'By gut feel',
+  'A spreadsheet',
   'Materials × a multiplier',
   'Hourly rate + materials',
-  'Software or an app',
-  'Something else',
+  'An app or software',
+  'Other',
 ] as const;
