@@ -1,0 +1,7 @@
+# Tells Netlify how to build the website from this code.
+[build]
+  command = "npm run build:web"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
